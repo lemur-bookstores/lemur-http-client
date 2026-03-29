@@ -1,4 +1,13 @@
 <?php
+/**
+ * @package    LemurHttpClient
+ * @category   Support
+ * @author     [elkincp Chaverra]
+ * @copyright  [2026] [lemur-bookstores]
+ * @license    MIT
+ * @since      1.0.0
+ */
+
 namespace LemurHttpClient;
 
 use LemurHttpClient\Cache\CacheFactory;
@@ -10,7 +19,13 @@ use LemurHttpClient\MultipartBuilder;
 use LemurHttpClient\StreamHandler;
 
 /**
- * Fachada principal del framework LemurHttpClient
+ * Main facade for the LemurHttpClient framework.
+ *
+ * Provides high-level HTTP client methods and manages configuration, adapters,
+ * interceptors, retry logic, authentication, caching, cookies, and streaming.
+ *
+ * @package  LemurHttpClient
+ * @since    1.0.0
  */
 class HttpClient
 {
@@ -24,6 +39,12 @@ class HttpClient
     private ?Cookies $cookies = null;
     private ?StreamHandler $streamHandler = null;
 
+    /**
+     * HttpClient constructor.
+     *
+     * @param array $config Optional configuration array.
+     * @since 1.0.0
+     */
     public function __construct(array $config = [])
     {
         $this->config = $config;
@@ -37,25 +58,134 @@ class HttpClient
         $this->streamHandler = $config['stream'] ?? new StreamHandler();
     }
 
+    /**
+     * Sets the authentication handler.
+     *
+     * @param mixed $auth Authentication handler.
+     * @return void
+     * @since 1.0.0
+     */
     public function setAuth($auth): void { $this->auth = $auth; }
+
+    /**
+     * Sets the cache handler.
+     *
+     * @param CacheInterface $cache Cache handler.
+     * @return void
+     * @since 1.0.0
+     */
     public function setCache(CacheInterface $cache): void { $this->cache = $cache; }
+
+    /**
+     * Sets the retry handler.
+     *
+     * @param RetryHandler $retry Retry handler.
+     * @return void
+     * @since 1.0.0
+     */
     public function setRetryHandler(RetryHandler $retry): void { $this->retryHandler = $retry; }
+
+    /**
+     * Sets the interceptor pipeline.
+     *
+     * @param InterceptorPipeline $pipeline Interceptor pipeline.
+     * @return void
+     * @since 1.0.0
+     */
     public function setPipeline(InterceptorPipeline $pipeline): void { $this->pipeline = $pipeline; }
+
+    /**
+     * Sets the cookies handler.
+     *
+     * @param Cookies $cookies Cookies handler.
+     * @return void
+     * @since 1.0.0
+     */
     public function setCookies(Cookies $cookies): void { $this->cookies = $cookies; }
+
+    /**
+     * Sets the stream handler.
+     *
+     * @param StreamHandler $stream Stream handler.
+     * @return void
+     * @since 1.0.0
+     */
     public function setStreamHandler(StreamHandler $stream): void { $this->streamHandler = $stream; }
 
+    /**
+     * Sends a GET request.
+     *
+     * @param string $url     Request URL.
+     * @param array  $options Request options.
+     * @return Response       HTTP response.
+     * @since 1.0.0
+     */
     public function get(string $url, array $options = []): Response
     { return $this->request('GET', $url, $options); }
+
+    /**
+     * Sends a POST request.
+     *
+     * @param string $url     Request URL.
+     * @param array  $options Request options.
+     * @return Response       HTTP response.
+     * @since 1.0.0
+     */
     public function post(string $url, array $options = []): Response
     { return $this->request('POST', $url, $options); }
+
+    /**
+     * Sends a PUT request.
+     *
+     * @param string $url     Request URL.
+     * @param array  $options Request options.
+     * @return Response       HTTP response.
+     * @since 1.0.0
+     */
     public function put(string $url, array $options = []): Response
     { return $this->request('PUT', $url, $options); }
+
+    /**
+     * Sends a PATCH request.
+     *
+     * @param string $url     Request URL.
+     * @param array  $options Request options.
+     * @return Response       HTTP response.
+     * @since 1.0.0
+     */
     public function patch(string $url, array $options = []): Response
     { return $this->request('PATCH', $url, $options); }
+
+    /**
+     * Sends a DELETE request.
+     *
+     * @param string $url     Request URL.
+     * @param array  $options Request options.
+     * @return Response       HTTP response.
+     * @since 1.0.0
+     */
     public function delete(string $url, array $options = []): Response
     { return $this->request('DELETE', $url, $options); }
+
+    /**
+     * Sends a HEAD request.
+     *
+     * @param string $url     Request URL.
+     * @param array  $options Request options.
+     * @return Response       HTTP response.
+     * @since 1.0.0
+     */
     public function head(string $url, array $options = []): Response
     { return $this->request('HEAD', $url, $options); }
+
+    /**
+     * Sends an OPTIONS request.
+     *
+     * @param string $url     Request URL.
+     * @param array  $options Request options.
+     * @return Response       HTTP response.
+     * @since 1.0.0
+     */
     public function options(string $url, array $options = []): Response
     { return $this->request('OPTIONS', $url, $options); }
 

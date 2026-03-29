@@ -1,0 +1,21 @@
+{
+  "name": "lemur/http-client",
+  "description": "Framework HTTP para PHP inspirado en Axios, sin dependencias externas.",
+  "type": "library",
+  "require": {
+    "php": ">=7.4",
+    "ext-curl": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "LemurHttpClient\\": "src/"
+    }
+  },
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "lemur-bookstores",
+      "email": "delkincp5@gmail.com"
+    }
+  ]
+}

@@ -1,54 +1,65 @@
 <?php
+/**
+ * @package    LemurHttpClient
+ * @category   Adapter
+ * @author     [elkincp Chaverra]
+ * @copyright  [2026] [lemur-bookstores]
+ * @license    MIT
+ * @since      1.0.0
+ */
+
 namespace LemurHttpClient;
 
 /**
- * Adaptador simple para ejecutar una petición HTTP usando cURL
+ * Adapter for sending HTTP requests using cURL.
+ *
+ * Uses CurlHandleBuilder to build and parse cURL requests and responses.
+ *
+ * @package  LemurHttpClient
+ * @since    1.0.0
  */
 class CurlAdapter
 {
-    public function send(Request $request): Response
+    private CurlHandleBuilder $builder;
+
+    /**
+     * CurlAdapter constructor.
+     *
+     * Allows dependency injection for testing; creates a default builder if not provided.
+     *
+     * @param CurlHandleBuilder|null $builder Optional handle builder for testing or customization.
+     * @since 1.0.0
+     */
+    public function __construct(CurlHandleBuilder $builder = null)
     {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $request->getUrl());
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $request->getMethod());
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $headers = [];
-        foreach ($request->getHeaders() as $k => $v) {
-            $headers[] = "$k: $v";
-        }
-        if ($headers) {
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        }
-        if ($request->getBody() !== null) {
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $request->getBody());
-        }
-        // Opciones adicionales
-        foreach ($request->getOptions() as $k => $v) {
-            if (defined($k)) {
-                curl_setopt($ch, constant($k), $v);
-            }
-        }
-        $body = curl_exec($ch);
-        $info = curl_getinfo($ch);
-        $headerSize = $info['header_size'] ?? 0;
-        $rawHeaders = substr($body, 0, $headerSize);
-        $rawBody = substr($body, $headerSize);
-        $headersArr = $this->parseHeaders($rawHeaders);
-        $status = $info['http_code'] ?? 0;
-        curl_close($ch);
-        return new Response($status, $headersArr, $rawBody, $info);
+        $this->builder = $builder ?? new CurlHandleBuilder();
     }
 
-    private function parseHeaders($raw): array
+    /**
+     * Sends an HTTP request and returns the response.
+     *
+     * Builds the cURL handle, executes the request, parses the response, and closes the handle.
+     * Throws RuntimeException on cURL error.
+     *
+     * @param  Request  $request  The HTTP request to send.
+     * @return Response           The HTTP response object.
+     * @throws \RuntimeException  If a cURL error occurs during execution.
+     * @since  1.0.0
+     */
+    public function send(Request $request): Response
     {
-        $headers = [];
-        $lines = explode("\r\n", $raw);
-        foreach ($lines as $line) {
-            if (strpos($line, ':') !== false) {
-                [$k, $v] = explode(':', $line, 2);
-                $headers[trim($k)] = trim($v);
-            }
+        $ch     = $this->builder->build($request);
+        $output = curl_exec($ch);
+
+        if ($output === false) {
+            $error = curl_error($ch);
+            curl_close($ch);
+            throw new \RuntimeException("cURL error: $error");
         }
-        return $headers;
+
+        $response = $this->builder->parseResponse($ch, $output);
+        curl_close($ch);
+
+        return $response;
     }
 }
